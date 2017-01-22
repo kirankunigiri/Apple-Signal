@@ -16,12 +16,12 @@ class ViewController: NSViewController {
     @IBOutlet weak var textField: NSTextField!
     
     // MARK: Properties
-    let family = Signal(serviceType: "family-demo")
+    let signal = Signal(serviceType: "signal-demo")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        family.delegate = self
+        signal.delegate = self
     }
 
     override var representedObject: Any? {
@@ -33,24 +33,24 @@ class ViewController: NSViewController {
     @IBAction func textFieldAction(_ sender: NSTextField) {
         self.textLabel.stringValue = sender.stringValue
         if (textField.stringValue.characters.count > 0) {
-            family.sendData(object: textField.stringValue)
+            signal.sendData(object: textField.stringValue, type: DataType.string.rawValue)
         }
     }
     
     @IBAction func connect(_ sender: NSButton) {
-        family.autoConnect()
+        signal.autoConnect()
     }
     
     @IBAction func stopSearching(_ sender: NSButton) {
-        family.stopSearching()
+        signal.stopSearching()
     }
     
     @IBAction func disconnect(_ sender: NSButton) {
-        family.disconnect()
+        signal.disconnect()
     }
     
     @IBAction func shutDown(_ sender: NSButton) {
-        family.shutDown()
+        signal.shutDown()
     }
 
 }
@@ -59,9 +59,11 @@ class ViewController: NSViewController {
 
 extension ViewController: SignalDelegate {
     
-    func receivedData(data: Data) {
+    func receivedData(data: Data, type: UInt) {
         OperationQueue.main.addOperation {
             let string = data.convert() as! String
+            print(type)
+            
             self.textLabel.stringValue = string
         }
     }

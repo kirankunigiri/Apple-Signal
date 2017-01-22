@@ -91,11 +91,11 @@ extension InviteTableViewController {
         case 0:
             let peer = delegate?.getConnectedPeers()[indexPath.row]
             cell.name.text = peer?.peerID.displayName
-            cell.status.text = peer?.state.stringValue()
+            cell.status.text = peer?.state.stringValue
         case 1:
             let peer = delegate?.getAvailablePeers()[indexPath.row]
             cell.name.text = peer?.peerID.displayName
-            cell.status.text = peer?.state.stringValue()
+            cell.status.text = peer?.state.stringValue
         default:
             cell.name.text = ""
         }
