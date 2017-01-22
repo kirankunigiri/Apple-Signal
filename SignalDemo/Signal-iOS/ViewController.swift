@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var textField: UITextField!
     
     // MARK: Properties
-    let family = Family(serviceType: "family-demo")
+    let family = Signal(serviceType: "family-demo")
     
     // MARK: Setup
     override func viewDidLoad() {
@@ -83,7 +83,7 @@ extension ViewController: UITextFieldDelegate {
 
 
 // MARK: - Family delegate
-extension ViewController: FamilyDelegate {
+extension ViewController: SIgnalDelegate {
     
     func receivedData(data: Data) {
         OperationQueue.main.addOperation {

@@ -13,7 +13,7 @@ import MultipeerConnectivity
 
 
 // MARK: - Family Protocol
-protocol FamilyDelegate {
+protocol SIgnalDelegate {
     
     /** Runs when the device has received data from another peer. */
     func receivedData(data: Data)
@@ -29,7 +29,7 @@ protocol FamilyDelegate {
 
 
 // MARK: - Main Family Class
-class Family: NSObject {
+class Signal: NSObject {
     
     
     // MARK: Properties
@@ -45,7 +45,7 @@ class Family: NSObject {
     /** The amount of time that can be spent connecting with a device before it times out */
     var connectionTimeout = 10.0
     /** The delegate. Conform to its methods to be informed when certain events occur */
-    var delegate: FamilyDelegate?
+    var delegate: SIgnalDelegate?
     /** Whether the device is automatically inviting all devices */
     var inviteMode = InviteMode.Auto
     /** Whether the device is automatically accepting all invitations */
@@ -232,7 +232,7 @@ class Family: NSObject {
 
 
 // MARK: - Advertiser Delegate
-extension Family: MCNearbyServiceAdvertiserDelegate {
+extension Signal: MCNearbyServiceAdvertiserDelegate {
     
     // Received invitation
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
@@ -265,7 +265,7 @@ extension Family: MCNearbyServiceAdvertiserDelegate {
 
 
 // MARK: - Browser Delegate
-extension Family: MCNearbyServiceBrowserDelegate {
+extension Signal: MCNearbyServiceBrowserDelegate {
     
     // Found a peer
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
@@ -301,7 +301,7 @@ extension Family: MCNearbyServiceBrowserDelegate {
 
 
 // MARK: - Session Delegate
-extension Family: MCSessionDelegate {
+extension Signal: MCSessionDelegate {
     
     // Peer changed state
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
@@ -351,7 +351,7 @@ extension Family: MCSessionDelegate {
 
 
 // MARK: - Invite Tableview Delegate
-extension Family: InviteDelegate {
+extension Signal: InviteDelegate {
     
     func getAvailablePeers() -> [Peer] {
         return availablePeers
