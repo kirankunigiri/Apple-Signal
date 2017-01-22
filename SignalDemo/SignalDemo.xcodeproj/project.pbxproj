@@ -16,6 +16,10 @@
 		9FCE38E01E348ED200AFBF81 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FCE38DF1E348ED200AFBF81 /* ViewController.swift */; };
 		9FCE38E21E348ED200AFBF81 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9FCE38E11E348ED200AFBF81 /* Assets.xcassets */; };
 		9FCE38E51E348ED200AFBF81 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9FCE38E31E348ED200AFBF81 /* Main.storyboard */; };
+		9FFA4F441E3490F20019AA92 /* Family.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9FFA4F411E3490F20019AA92 /* Family.storyboard */; };
+		9FFA4F451E3490F20019AA92 /* Family.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FFA4F421E3490F20019AA92 /* Family.swift */; };
+		9FFA4F461E3490F20019AA92 /* InviteTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FFA4F431E3490F20019AA92 /* InviteTableViewController.swift */; };
+		9FFA4F491E3490FF0019AA92 /* Family.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FFA4F481E3490FF0019AA92 /* Family.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +36,10 @@
 		9FCE38E11E348ED200AFBF81 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9FCE38E41E348ED200AFBF81 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9FCE38E61E348ED200AFBF81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9FFA4F411E3490F20019AA92 /* Family.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Family.storyboard; sourceTree = "<group>"; };
+		9FFA4F421E3490F20019AA92 /* Family.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Family.swift; sourceTree = "<group>"; };
+		9FFA4F431E3490F20019AA92 /* InviteTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InviteTableViewController.swift; sourceTree = "<group>"; };
+		9FFA4F481E3490FF0019AA92 /* Family.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Family.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +81,7 @@
 		9FCE38C61E348EA900AFBF81 /* Signal-iOS */ = {
 			isa = PBXGroup;
 			children = (
+				9FFA4F401E3490F20019AA92 /* Family-iOS */,
 				9FCE38C71E348EA900AFBF81 /* AppDelegate.swift */,
 				9FCE38C91E348EA900AFBF81 /* ViewController.swift */,
 				9FCE38CB1E348EA900AFBF81 /* Main.storyboard */,
@@ -86,6 +95,7 @@
 		9FCE38DC1E348ED200AFBF81 /* Signal-Mac */ = {
 			isa = PBXGroup;
 			children = (
+				9FFA4F471E3490FF0019AA92 /* Family-Mac */,
 				9FCE38DD1E348ED200AFBF81 /* AppDelegate.swift */,
 				9FCE38DF1E348ED200AFBF81 /* ViewController.swift */,
 				9FCE38E11E348ED200AFBF81 /* Assets.xcassets */,
@@ -93,6 +103,24 @@
 				9FCE38E61E348ED200AFBF81 /* Info.plist */,
 			);
 			path = "Signal-Mac";
+			sourceTree = "<group>";
+		};
+		9FFA4F401E3490F20019AA92 /* Family-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				9FFA4F411E3490F20019AA92 /* Family.storyboard */,
+				9FFA4F421E3490F20019AA92 /* Family.swift */,
+				9FFA4F431E3490F20019AA92 /* InviteTableViewController.swift */,
+			);
+			path = "Family-iOS";
+			sourceTree = "<group>";
+		};
+		9FFA4F471E3490FF0019AA92 /* Family-Mac */ = {
+			isa = PBXGroup;
+			children = (
+				9FFA4F481E3490FF0019AA92 /* Family.swift */,
+			);
+			path = "Family-Mac";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -179,6 +207,7 @@
 			files = (
 				9FCE38D21E348EAA00AFBF81 /* LaunchScreen.storyboard in Resources */,
 				9FCE38CF1E348EAA00AFBF81 /* Assets.xcassets in Resources */,
+				9FFA4F441E3490F20019AA92 /* Family.storyboard in Resources */,
 				9FCE38CD1E348EA900AFBF81 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -199,8 +228,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9FFA4F461E3490F20019AA92 /* InviteTableViewController.swift in Sources */,
 				9FCE38CA1E348EA900AFBF81 /* ViewController.swift in Sources */,
 				9FCE38C81E348EA900AFBF81 /* AppDelegate.swift in Sources */,
+				9FFA4F451E3490F20019AA92 /* Family.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -210,6 +241,7 @@
 			files = (
 				9FCE38E01E348ED200AFBF81 /* ViewController.swift in Sources */,
 				9FCE38DE1E348ED200AFBF81 /* AppDelegate.swift in Sources */,
+				9FFA4F491E3490FF0019AA92 /* Family.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,6 +447,7 @@
 				9FCE38D61E348EAA00AFBF81 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9FCE38E71E348ED200AFBF81 /* Build configuration list for PBXNativeTarget "Signal-Mac" */ = {
 			isa = XCConfigurationList;
@@ -423,6 +456,7 @@
 				9FCE38E91E348ED200AFBF81 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

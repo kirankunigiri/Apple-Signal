@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  Signal-Mac
+//  FamilyDemo-Mac
 //
-//  Created by Kiran Kunigiri on 1/21/17.
+//  Created by Kiran Kunigiri on 1/7/17.
 //  Copyright © 2017 Kiran. All rights reserved.
 //
 
