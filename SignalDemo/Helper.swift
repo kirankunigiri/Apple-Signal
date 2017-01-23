@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum DataType: UInt {
+enum DataType: UInt32 {
     case string = 100
     case image = 101
 }

@@ -73,7 +73,7 @@ extension ViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.textLabel.text = textField.text
         if (textField.text != nil && textField.text!.characters.count > 0) {
-            signal.sendData(object: textField.text!, type: DataType.string.rawValue)
+            signal.sendObject(object: textField.text!, type: DataType.string.rawValue)
         }
         textField.resignFirstResponder()
         return false
@@ -85,16 +85,27 @@ extension ViewController: UITextFieldDelegate {
 // MARK: - Family delegate
 extension ViewController: SignalDelegate {
     
-    func receivedData(data: Data, type: UInt) {
-        OperationQueue.main.addOperation {
-            let string = data.convert() as? String
-            self.textLabel.text = string
+    func signal(_ signal: Signal, didReceiveData data: Data, ofType type: UInt32) {
+        let string = data.convert() as! String
+        self.textLabel.text = string
+    }
+    
+    func signal(_ signal: Signal, shouldAcceptInvitationFrom device: String, respond: @escaping (Bool) -> Void) {
+        if signal.acceptMode == .Auto {
+            respond(true)
+        } else if signal.acceptMode == .UI {
+            let alert = signal.alertForInvitation(name: device) { (response) in
+                respond(response)
+            }
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
-    func receivedInvitation(device: String, alert: UIAlertController?) {
-        if (signal.acceptMode == .UI) {
-            self.present(alert!, animated: true, completion: nil)
+    func signal(_ signal: Signal, connectedDevicesChanged devices: [String]) {
+        if (devices.count > 0) {
+            self.devicesLabel.text = "Connected Devices: \(devices)"
+        } else {
+            self.devicesLabel.text = "No devices conncted"
         }
     }
     
@@ -109,3 +120,4 @@ extension ViewController: SignalDelegate {
     }
     
 }
+

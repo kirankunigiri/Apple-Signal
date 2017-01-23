@@ -1,46 +1,35 @@
 //
-//  Family.swift
-//  Family
+//  Signal.swift
 //
-//  Created by Kiran Kunigiri on 12/16/16.
-//  Copyright © 2016 Kiran. All rights reserved.
+//  Created by Kiran Kunigiri on 1/22/17.
+//  Copyright © 2017 Kiran. All rights reserved.
 //
 
 
 import Foundation
 import MultipeerConnectivity
 
+#if (iOS)
+import UIKit
+#endif
 
 
 // MARK: - Family Protocol
 protocol SignalDelegate {
     
     /** Runs when the device has received data from another peer. */
-    func receivedData(data: Data)
+    func receivedData(data: Data, type: UInt)
     
+    #if os(iOS)
     /** Runs when the device has received an invitation from another */
     func receivedInvitation(device: String, alert: UIAlertController?)
+    #elseif os(macOS)
+    /** Runs when the device has received an invitation from another */
+    func receivedInvitation(device: String)
+    #endif
     
     /** Runs when a device connects/disconnects to the session */
     func deviceConnectionsChanged(connectedDevices: [String])
-    
-}
-
-
-enum DataType: Int {
-    case string = 100
-    case image = 101
-}
-
-class DataContainer {
-    
-    var type: Int!
-    var object: Any!
-    
-    init(type: Int, object: Any) {
-        self.type = type
-        self.object = object
-    }
     
 }
 
@@ -62,19 +51,22 @@ class Signal: NSObject {
     /** The amount of time that can be spent connecting with a device before it times out */
     var connectionTimeout = 10.0
     /** The delegate. Conform to its methods to be informed when certain events occur */
-    var delegate: SIgnalDelegate?
+    var delegate: SignalDelegate?
     /** Whether the device is automatically inviting all devices */
     var inviteMode = InviteMode.Auto
     /** Whether the device is automatically accepting all invitations */
     var acceptMode = InviteMode.Auto
+    /** Peers */
+    var availablePeers: [Peer] = []
+    var connectedPeers: [Peer] = []
     /** Prints out all errors and status updates */
     var debugMode = false
     
-    // UI Elements
+    // UI Elements (iOS Only)
+    #if os(iOS)
     private var inviteNavigationController: UINavigationController!
     fileprivate var inviteController: InviteTableViewController!
-    var availablePeers: [Peer] = []
-    var connectedPeers: [Peer] = []
+    #endif
     
     /** The main object that manages the current connections */
     lazy var session: MCSession = {
@@ -87,12 +79,17 @@ class Signal: NSObject {
     
     // MARK: - Initializers
     
-    /** Initializes the family. Service type is just the name of the signal, and is limited to one hyphen (-) and 15 characters */
+    /** Initializes the signal service. Service type is just the name of the signal, and is limited to one hyphen (-) and 15 characters */
     convenience init(serviceType: String) {
+        #if os(iOS)
         self.init(serviceType: serviceType, deviceName: UIDevice.current.name)
+        #elseif os(macOS)
+        self.init(serviceType: serviceType, deviceName: Host.current().name!)
+        #endif
+        
     }
     
-    /** Initializes the family. Service type is just the name of the signal, and is limited to one hyphen (-) and 15 characters. The device name is what others will see. */
+    /** Initializes the signal service. Service type is just the name of the signal, and is limited to one hyphen (-) and 15 characters. The device name is what others will see. */
     init(serviceType: String, deviceName: String) {
         super.init()
         
@@ -108,9 +105,10 @@ class Signal: NSObject {
         self.serviceBrowser = MCNearbyServiceBrowser(peer: self.devicePeerID, serviceType: serviceType)
         self.serviceBrowser.delegate = self
         
-        // Setup the invite view controller
         
-        let storyboard = UIStoryboard(name: "Family", bundle: nil)
+        #if os(iOS)
+        // Setup the invite view controller
+        let storyboard = UIStoryboard(name: "Signal", bundle: nil)
         inviteController = storyboard.instantiateViewController(withIdentifier: "inviteViewController") as! InviteTableViewController
         inviteController.delegate = self
         
@@ -119,6 +117,7 @@ class Signal: NSObject {
         
         let doneBarButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButton))
         inviteController.navigationItem.setRightBarButton(doneBarButton, animated: true)
+        #endif
     }
     
     // Stop the advertising and browsing services
@@ -130,7 +129,7 @@ class Signal: NSObject {
     // MARK: - Methods
     
     
-    
+    #if os(iOS)
     // NAVIGATION CONTROLLER
     
     @objc private func cancelButton() {
@@ -142,6 +141,15 @@ class Signal: NSObject {
         inviteNavigationController.dismiss(animated: true, completion: nil)
     }
     
+    /** Returns a View Controller that you can present so the user can manually invite certain devices */
+    func inviteUI() -> UIViewController {
+        self.inviteMode = .UI
+        self.serviceBrowser.startBrowsingForPeers()
+    
+        return inviteNavigationController
+    }
+    #endif
+    
     
     
     // HOST
@@ -150,14 +158,6 @@ class Signal: NSObject {
     func inviteAuto() {
         self.inviteMode = .Auto
         self.serviceBrowser.startBrowsingForPeers()
-    }
-    
-    /** Returns a View Controller that you can present so the user can manually invite certain devices */
-    func inviteUI() -> UIViewController {
-        self.inviteMode = .UI
-        self.serviceBrowser.startBrowsingForPeers()
-        
-        return inviteNavigationController
     }
     
     
@@ -209,7 +209,7 @@ class Signal: NSObject {
         availablePeers.removeAll()
     }
     
-    /** Shuts down all family services. Stops inviting/accepting and disconnects from the session */
+    /** Shuts down all signal services. Stops inviting/accepting and disconnects from the session */
     func shutDown() {
         stopSearching()
         disconnect()
@@ -226,11 +226,12 @@ class Signal: NSObject {
     }
     
     /** Sends data to all connected peers. Pass in an object, and the method will convert it into data and send it. You can use the Data extended method, `convertData()` in order to convert it back into an object. */
-    func sendData(object: Any) {
+    func sendObject(object: Any, type: UInt) {
         if (session.connectedPeers.count > 0) {
             do {
-                let data = NSKeyedArchiver.archivedData(withRootObject: object)
-                try session.send(data, toPeers: session.connectedPeers, with: MCSessionSendDataMode.reliable)
+                let container: [Any] = [object, type]
+                let item = NSKeyedArchiver.archivedData(withRootObject: container)
+                try session.send(item, toPeers: session.connectedPeers, with: MCSessionSendDataMode.reliable)
             } catch let error {
                 printDebug(error.localizedDescription)
             }
@@ -238,12 +239,12 @@ class Signal: NSObject {
     }
     
     /** Sends data to all connected peers. Pass in an object, and the method will convert it into data and send it. You can use the Data extended method, `convertData()` in order to convert it back into an object. */
-    func sendData(object: Any, type: Int) {
+    func sendData(data: Data, type: UInt) {
         if (session.connectedPeers.count > 0) {
             do {
-                let container = [object, type]
-                let data = NSKeyedArchiver.archivedData(withRootObject: container)
-                try session.send(data, toPeers: session.connectedPeers, with: MCSessionSendDataMode.reliable)
+                let container: [Any] = [data, type]
+                let item = NSKeyedArchiver.archivedData(withRootObject: container)
+                try session.send(item, toPeers: session.connectedPeers, with: MCSessionSendDataMode.reliable)
             } catch let error {
                 printDebug(error.localizedDescription)
             }
@@ -273,6 +274,7 @@ extension Signal: MCNearbyServiceAdvertiserDelegate {
             // Auto: Accept the invite
             invitationHandler(true, self.session)
         } else if (acceptMode == .UI) {
+            #if os(iOS)
             // UI: Present an alert
             let alert = UIAlertController(title: "Invite", message: "You've received an invite from \(peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
             alert.addAction(UIAlertAction(title: "Accept", style: .default, handler: { action in
@@ -282,6 +284,7 @@ extension Signal: MCNearbyServiceAdvertiserDelegate {
                 invitationHandler(false, self.session)
             }))
             delegate?.receivedInvitation(device: peerID.displayName, alert: alert)
+            #endif
         }
     }
     
@@ -303,7 +306,9 @@ extension Signal: MCNearbyServiceBrowserDelegate {
         
         // Update the list and the controller
         availablePeers.append(Peer(peerID: peerID, state: .notConnected))
+        #if os(iOS)
         inviteController.update()
+        #endif
         
         // Invite peer in auto mode
         if (inviteMode == .Auto) {
@@ -323,7 +328,10 @@ extension Signal: MCNearbyServiceBrowserDelegate {
         
         // Update the lost peer
         availablePeers = availablePeers.filter{ $0.peerID != peerID }
+        
+        #if os(iOS)
         inviteController.update()
+        #endif
     }
     
 }
@@ -335,7 +343,7 @@ extension Signal: MCSessionDelegate {
     
     // Peer changed state
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        printDebug("Peer \(peerID.displayName) changed state to \(state.stringValue())")
+        printDebug("Peer \(peerID.displayName) changed state to \(state.stringValue)")
         
         // If the new state is connected, then remove it from the available peers
         // Otherwise, update the state
@@ -348,8 +356,10 @@ extension Signal: MCSessionDelegate {
         // Update all connected peers
         connectedPeers = session.connectedPeers.map{ Peer(peerID: $0, state: .connected) }
         
+        #if os(iOS)
         // Update table view
         inviteController.update()
+        #endif
         
         // Send new connection list to delegate
         self.delegate?.deviceConnectionsChanged(connectedDevices: session.connectedPeers.map({$0.displayName}))
@@ -358,7 +368,12 @@ extension Signal: MCSessionDelegate {
     // Received data
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         printDebug("Received data: \(data.count) bytes")
-        delegate?.receivedData(data: data)
+        
+        let container = data.convert() as! [Any]
+        let item = container[0] as! Data
+        let type = container[1] as! UInt
+        
+        delegate?.receivedData(data: item, type: type)
     }
     
     // Received stream
@@ -380,6 +395,7 @@ extension Signal: MCSessionDelegate {
 
 
 
+#if os(iOS)
 // MARK: - Invite Tableview Delegate
 extension Signal: InviteDelegate {
     
@@ -396,6 +412,8 @@ extension Signal: InviteDelegate {
     }
     
 }
+#endif
+
 
 
 // MARK: - Data extension for conversion
@@ -413,18 +431,17 @@ extension Data {
 // MARK: - Information data
 extension MCSessionState {
     
-    // TODO: Method or function var?
-    
     /** String version of an `MCSessionState` */
-    func stringValue() -> String {
+    var stringValue: String {
         switch(self) {
-            case .notConnected: return "Available"
-            case .connecting: return "Connecting"
-            case .connected: return "Connected"
+        case .notConnected: return "Available"
+        case .connecting: return "Connecting"
+        case .connected: return "Connected"
         }
     }
     
 }
+
 
 
 // MARK: - Custom Peer class

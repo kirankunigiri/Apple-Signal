@@ -33,7 +33,7 @@ class ViewController: NSViewController {
     @IBAction func textFieldAction(_ sender: NSTextField) {
         self.textLabel.stringValue = sender.stringValue
         if (textField.stringValue.characters.count > 0) {
-            signal.sendData(object: textField.stringValue, type: DataType.string.rawValue)
+            signal.sendObject(object: textField.stringValue, type: DataType.string.rawValue)
         }
     }
     
@@ -59,26 +59,21 @@ class ViewController: NSViewController {
 
 extension ViewController: SignalDelegate {
     
-    func receivedData(data: Data, type: UInt) {
-        OperationQueue.main.addOperation {
-            let string = data.convert() as! String
-            print(type)
-            
-            self.textLabel.stringValue = string
+    func signal(_ signal: Signal, didReceiveData data: Data, ofType type: UInt32) {
+        let string = data.convert() as! String
+        self.textLabel.stringValue = string
+    }
+    
+    func signal(_ signal: Signal, shouldAcceptInvitationFrom device: String, respond: @escaping (Bool) -> Void) {
+        respond(true)
+    }
+    
+    func signal(_ signal: Signal, connectedDevicesChanged devices: [String]) {
+        if (devices.count > 0) {
+            self.deviceLabel.stringValue = "Connected Devices: \(devices)"
+        } else {
+            self.deviceLabel.stringValue = "No devices conncted"
         }
     }
     
-    func receivedInvitation(device: String) {
-        
-    }
-    
-    func deviceConnectionsChanged(connectedDevices: [String]) {
-        OperationQueue.main.addOperation {
-            if (connectedDevices.count > 0) {
-                self.deviceLabel.stringValue = "Connected Devices: \(connectedDevices)"
-            } else {
-                self.deviceLabel.stringValue = "No devices conncted"
-            }
-        }
-    }
 }
