@@ -40,8 +40,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func inviteUI(_ sender: UIButton) {
-        let vc = signal.inviteUI()
-        self.present(vc, animated: true, completion: nil)
+        signal.inviteUI()
     }
     
     @IBAction func acceptAuto(_ sender: UIButton) {

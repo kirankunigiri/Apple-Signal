@@ -49,9 +49,11 @@ class Signal: NSObject {
     var inviteMode = InviteMode.Auto
     /** Whether the device is automatically accepting all invitations */
     var acceptMode = InviteMode.Auto
-    /** Peers */
+    /** Peers available to connect to */
     var availablePeers: [Peer] = []
+    /** Peers connected to */
     var connectedPeers: [Peer] = []
+    /** The names of all devices connected */
     var connectedDeviceNames: [String] {
         return session.connectedPeers.map({$0.displayName})
     }
@@ -135,11 +137,12 @@ class Signal: NSObject {
     }
     
     /** Returns a View Controller that you can present so the user can manually invite certain devices */
-    func inviteUI() -> UIViewController {
+    func inviteUI() {
         self.inviteMode = .UI
         self.serviceBrowser.startBrowsingForPeers()
     
-        return inviteNavigationController
+        let window = UIApplication.shared.keyWindow
+        window?.rootViewController?.present(inviteNavigationController, animated: true, completion: nil)
     }
     #endif
     
@@ -369,15 +372,15 @@ extension Signal: MCSessionDelegate {
         // Update all connected peers
         connectedPeers = session.connectedPeers.map{ Peer(peerID: $0, state: .connected) }
         
-        #if os(iOS)
-        // Update table view
-        inviteController.update()
-        #endif
-        
         // Send new connection list to delegate
         OperationQueue.main.addOperation {
             self.delegate?.signal(connectedDevicesChanged: session.connectedPeers.map({$0.displayName}))
         }
+        
+        #if os(iOS)
+        // Update table view
+        inviteController.update()
+        #endif
     }
     
     // Received data
@@ -433,6 +436,7 @@ extension Signal: InviteDelegate {
 #endif
 
 
+
 // MARK: - Information data
 extension MCSessionState {
     
@@ -443,23 +447,6 @@ extension MCSessionState {
         case .connecting: return "Connecting"
         case .connected: return "Connected"
         }
-    }
-    
-}
-
-
-
-// MARK: - Data extension for conversion
-extension Data {
-    
-    /** Unarchive data into an object. It will be returned as type `Any` but you can cast it into the correct type. */
-    func convert() -> Any {
-        return NSKeyedUnarchiver.unarchiveObject(with: self)!
-    }
-    
-    /** Converts an object into Data using the NSKeyedArchiver */
-    static func toData(object: Any) -> Data {
-        return NSKeyedArchiver.archivedData(withRootObject: object)
     }
     
 }
@@ -482,5 +469,19 @@ class Peer {
 
 
 
+// MARK: - Data extension for conversion
+extension Data {
+    
+    /** Unarchive data into an object. It will be returned as type `Any` but you can cast it into the correct type. */
+    func convert() -> Any {
+        return NSKeyedUnarchiver.unarchiveObject(with: self)!
+    }
+    
+    /** Converts an object into Data using the NSKeyedArchiver */
+    static func toData(object: Any) -> Data {
+        return NSKeyedArchiver.archivedData(withRootObject: object)
+    }
+    
+}
 
 
