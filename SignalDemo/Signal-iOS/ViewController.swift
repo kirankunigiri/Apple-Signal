@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var textField: UITextField!
     
     // MARK: Properties
-    let signal = Signal(serviceType: "signal-demo")
+    let signal = Signal.instance
     
     // MARK: Setup
     override func viewDidLoad() {
@@ -26,6 +26,7 @@ class ViewController: UIViewController {
         textField.delegate = self
         textField.returnKeyType = .done
         
+        signal.initialize(serviceType: "signal-demo")
         signal.delegate = self
     }
 

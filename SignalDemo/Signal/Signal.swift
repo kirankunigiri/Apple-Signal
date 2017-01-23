@@ -32,6 +32,7 @@ protocol SignalDelegate {
 // MARK: - Main Family Class
 class Signal: NSObject {
     
+    static let instance = Signal()
     
     // MARK: Properties
     
@@ -75,19 +76,16 @@ class Signal: NSObject {
     // MARK: - Initializers
     
     /** Initializes the signal service. Service type is just the name of the signal, and is limited to one hyphen (-) and 15 characters */
-    convenience init(serviceType: String) {
+    func initialize(serviceType: String) {
         #if os(iOS)
-        self.init(serviceType: serviceType, deviceName: UIDevice.current.name)
+            initialize(serviceType: serviceType, deviceName: UIDevice.current.name)
         #elseif os(macOS)
-        self.init(serviceType: serviceType, deviceName: Host.current().name!)
+            initialize(serviceType: serviceType, deviceName: Host.current().name!)
         #endif
-        
     }
     
     /** Initializes the signal service. Service type is just the name of the signal, and is limited to one hyphen (-) and 15 characters. The device name is what others will see. */
-    init(serviceType: String, deviceName: String) {
-        super.init()
-        
+    func initialize(serviceType: String, deviceName: String) {
         // Setup device/signal properties
         self.serviceType = serviceType
         self.devicePeerID = MCPeerID(displayName: deviceName)
@@ -102,16 +100,16 @@ class Signal: NSObject {
         
         
         #if os(iOS)
-        // Setup the invite view controller
-        let storyboard = UIStoryboard(name: "Signal", bundle: nil)
-        inviteController = storyboard.instantiateViewController(withIdentifier: "inviteViewController") as! InviteTableViewController
-        inviteController.delegate = self
-        
-        inviteNavigationController = UINavigationController(rootViewController: inviteController)
-        inviteNavigationController.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-        
-        let doneBarButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButton))
-        inviteController.navigationItem.setRightBarButton(doneBarButton, animated: true)
+            // Setup the invite view controller
+            let storyboard = UIStoryboard(name: "Signal", bundle: nil)
+            inviteController = storyboard.instantiateViewController(withIdentifier: "inviteViewController") as! InviteTableViewController
+            inviteController.delegate = self
+            
+            inviteNavigationController = UINavigationController(rootViewController: inviteController)
+            inviteNavigationController.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
+            
+            let doneBarButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButton))
+            inviteController.navigationItem.setRightBarButton(doneBarButton, animated: true)
         #endif
     }
     

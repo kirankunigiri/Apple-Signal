@@ -16,11 +16,12 @@ class ViewController: NSViewController {
     @IBOutlet weak var textField: NSTextField!
     
     // MARK: Properties
-    let signal = Signal(serviceType: "signal-demo")
+    let signal = Signal.instance
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        signal.initialize(serviceType: "signal-demo")
         signal.delegate = self
     }
 
