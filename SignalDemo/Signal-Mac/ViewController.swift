@@ -65,15 +65,11 @@ extension ViewController: SignalDelegate {
         self.textLabel.stringValue = string
     }
     
-    func signal(didReceiveInvitation device: String) {
-        
-    }
-    
     func signal(connectedDevicesChanged devices: [String]) {
         if (devices.count > 0) {
             self.deviceLabel.stringValue = "Connected Devices: \(devices)"
         } else {
-            self.deviceLabel.stringValue = "No devices conncted"
+            self.deviceLabel.stringValue = "No devices connected"
         }
     }
     

@@ -91,17 +91,11 @@ extension ViewController: SignalDelegate {
         self.textLabel.text = string
     }
     
-    func signal(didReceiveInvitation device: String, alertController: UIAlertController?) {
-        if signal.acceptMode == .UI {
-            self.present(alertController!, animated: true, completion: nil)
-        }
-    }
-    
     func signal(connectedDevicesChanged devices: [String]) {
         if (devices.count > 0) {
             self.devicesLabel.text = "Connected Devices: \(devices)"
         } else {
-            self.devicesLabel.text = "No devices conncted"
+            self.devicesLabel.text = "No devices connected"
         }
     }
     
