@@ -9,7 +9,7 @@
 import Foundation
 import MultipeerConnectivity
 
-#if (iOS)
+#if os(iOS)
 import UIKit
 #endif
 
@@ -18,13 +18,18 @@ import UIKit
 protocol SignalDelegate {
     
     /** Runs when the device has received data from another peer. */
-    func signal(_ signal: Signal, didReceiveData data: Data, ofType type: UInt32)
+    func signal(didReceiveData data: Data, ofType type: UInt32)
     
+    #if os(iOS)
     /** Runs when the device has received an invitation from another */
-    func signal(_ signal: Signal, shouldAcceptInvitationFrom device: String, respond: @escaping (Bool) -> Void)
+    func signal(didReceiveInvitation device: String, alertController: UIAlertController?)
+    #elseif os(macOS)
+    /** Runs when the device has received an invitation from another */
+    func signal(didReceiveInvitation device: String)
+    #endif
     
     /** Runs when a device connects/disconnects to the session */
-    func signal(_ signal: Signal, connectedDevicesChanged devices: [String])
+    func signal(connectedDevicesChanged devices: [String])
     
 }
 
@@ -55,6 +60,9 @@ class Signal: NSObject {
     /** Peers */
     var availablePeers: [Peer] = []
     var connectedPeers: [Peer] = []
+    var connectedDeviceNames: [String] {
+        return session.connectedPeers.map({$0.displayName})
+    }
     /** Prints out all errors and status updates */
     var debugMode = false
     
@@ -209,7 +217,7 @@ class Signal: NSObject {
     }
     
     var isConnected: Bool {
-        return connectedPeers.count > 1
+        return connectedPeers.count >= 1
     }
     
     enum InviteMode {
@@ -237,7 +245,7 @@ class Signal: NSObject {
     }
     
     /** Sends data to all connected peers. Pass in an object, and the method will convert it into data and send it. You can use the Data extended method, `convertData()` in order to convert it back into an object. */
-    func sendData(data: Data, type: UInt) {
+    func sendData(data: Data, type: UInt32) {
         if (session.connectedPeers.count > 0) {
             do {
                 let container: [Any] = [data, type]
@@ -281,9 +289,25 @@ extension Signal: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         
         OperationQueue.main.addOperation {
-            self.delegate?.signal(self, shouldAcceptInvitationFrom: peerID.displayName, respond: { (accept) in
-                invitationHandler(accept, self.session)
-            })
+            if self.acceptMode == .Auto {
+                #if os(iOS)
+                self.delegate?.signal(didReceiveInvitation: peerID.displayName, alertController: nil)
+                #elseif os(macOS)
+                self.delegate?.signal(didReceiveInvitation: peerID.displayName)
+                #endif
+                invitationHandler(true, self.session)
+            } else if self.acceptMode == .UI {
+                #if os(iOS)
+                    let alert = UIAlertController(title: "Invite", message: "You've received an invite from \(peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "Accept", style: .default, handler: { action in
+                        invitationHandler(true, self.session)
+                    }))
+                    alert.addAction(UIAlertAction(title: "Decline", style: .destructive, handler: { action in
+                        invitationHandler(false, self.session)
+                    }))
+                    self.delegate?.signal(didReceiveInvitation: peerID.displayName, alertController: alert)
+                #endif
+            }
         }
     }
     
@@ -362,7 +386,7 @@ extension Signal: MCSessionDelegate {
         
         // Send new connection list to delegate
         OperationQueue.main.addOperation {
-            self.delegate?.signal(self, connectedDevicesChanged: session.connectedPeers.map({$0.displayName}))
+            self.delegate?.signal(connectedDevicesChanged: session.connectedPeers.map({$0.displayName}))
         }
     }
     
@@ -375,7 +399,7 @@ extension Signal: MCSessionDelegate {
         let type = container[1] as! UInt32
         
         OperationQueue.main.addOperation {
-            self.delegate?.signal(self, didReceiveData: item, ofType: type)
+            self.delegate?.signal(didReceiveData: item, ofType: type)
         }
         
     }
@@ -419,19 +443,6 @@ extension Signal: InviteDelegate {
 #endif
 
 
-
-// MARK: - Data extension for conversion
-extension Data {
-    
-    /** Unarchive data into an object. It will be returned as type `Any` but you can cast it into the correct type. */
-    func convert() -> Any {
-        return NSKeyedUnarchiver.unarchiveObject(with: self)!
-    }
-    
-}
-
-
-
 // MARK: - Information data
 extension MCSessionState {
     
@@ -442,6 +453,23 @@ extension MCSessionState {
         case .connecting: return "Connecting"
         case .connected: return "Connected"
         }
+    }
+    
+}
+
+
+
+// MARK: - Data extension for conversion
+extension Data {
+    
+    /** Unarchive data into an object. It will be returned as type `Any` but you can cast it into the correct type. */
+    func convert() -> Any {
+        return NSKeyedUnarchiver.unarchiveObject(with: self)!
+    }
+    
+    /** Converts an object into Data using the NSKeyedArchiver */
+    static func toData(object: Any) -> Data {
+        return NSKeyedArchiver.archivedData(withRootObject: object)
     }
     
 }

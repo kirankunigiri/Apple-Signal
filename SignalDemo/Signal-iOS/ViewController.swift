@@ -86,23 +86,18 @@ extension ViewController: UITextFieldDelegate {
 // MARK: - Family delegate
 extension ViewController: SignalDelegate {
     
-    func signal(_ signal: Signal, didReceiveData data: Data, ofType type: UInt32) {
+    func signal(didReceiveData data: Data, ofType type: UInt32) {
         let string = data.convert() as! String
         self.textLabel.text = string
     }
     
-    func signal(_ signal: Signal, shouldAcceptInvitationFrom device: String, respond: @escaping (Bool) -> Void) {
-        if signal.acceptMode == .Auto {
-            respond(true)
-        } else if signal.acceptMode == .UI {
-            let alert = signal.alertForInvitation(name: device) { (response) in
-                respond(response)
-            }
-            self.present(alert, animated: true, completion: nil)
+    func signal(didReceiveInvitation device: String, alertController: UIAlertController?) {
+        if signal.acceptMode == .UI {
+            self.present(alertController!, animated: true, completion: nil)
         }
     }
     
-    func signal(_ signal: Signal, connectedDevicesChanged devices: [String]) {
+    func signal(connectedDevicesChanged devices: [String]) {
         if (devices.count > 0) {
             self.devicesLabel.text = "Connected Devices: \(devices)"
         } else {
@@ -110,15 +105,7 @@ extension ViewController: SignalDelegate {
         }
     }
     
-    func deviceConnectionsChanged(connectedDevices: [String]) {
-        OperationQueue.main.addOperation {
-            if (connectedDevices.count > 0) {
-                self.devicesLabel.text = "Connected Devices: \(connectedDevices)"
-            } else {
-                self.devicesLabel.text = "No devices conncted"
-            }
-        }
-    }
-    
 }
+
+
 

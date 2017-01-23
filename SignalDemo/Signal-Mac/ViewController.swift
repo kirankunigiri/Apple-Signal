@@ -60,16 +60,16 @@ class ViewController: NSViewController {
 
 extension ViewController: SignalDelegate {
     
-    func signal(_ signal: Signal, didReceiveData data: Data, ofType type: UInt32) {
+    func signal(didReceiveData data: Data, ofType type: UInt32) {
         let string = data.convert() as! String
         self.textLabel.stringValue = string
     }
     
-    func signal(_ signal: Signal, shouldAcceptInvitationFrom device: String, respond: @escaping (Bool) -> Void) {
-        respond(true)
+    func signal(didReceiveInvitation device: String) {
+        
     }
     
-    func signal(_ signal: Signal, connectedDevicesChanged devices: [String]) {
+    func signal(connectedDevicesChanged devices: [String]) {
         if (devices.count > 0) {
             self.deviceLabel.stringValue = "Connected Devices: \(devices)"
         } else {
@@ -78,3 +78,7 @@ extension ViewController: SignalDelegate {
     }
     
 }
+
+
+
+
