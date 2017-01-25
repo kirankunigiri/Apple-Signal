@@ -1,4 +1,4 @@
- ![Upload](Images/Banner.gif)
+ ![Banner](Images/Banner.gif)
 # Apple Signal ![Platform](https://img.shields.io/badge/platform-iOS+macOS-677cf4.svg)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Build Passing](https://img.shields.io/badge/build-passing-brightgreen.svg)
@@ -21,16 +21,17 @@ A library that allows for local connections between Apple devices. It will autom
 
 ## Installation
 
-Grab the source folder and drag it into your project! If you are making a macOS app, you can remove the InviteTableViewController.swift and Signal.storyboard files.
+Grab the source folder and drag it into your project! If you are making a macOS app, you can remove the InviteTableViewController.swift and Signal.storyboard files. You also need to have [peertalk](https://github.com/rsms/peertalk) by Rasmus installed.
 
 
 ## Example
 
 Signal is really easy to setup. Just start the connection, and you can begin sending and receiving data! **This is a very basic overview. Check out the Complete Guide and Xcode demo project for the full capabilities.**
 
-Start the connection. There are multiple connection modes you can choose from.
+Start the connection with a service type, which is just the name of your connection. In order to be discovered, a device must use the same service name. There are also multiple connection modes you can choose from.
 
 ```swift
+Signal.instance.initialize(serviceType: "signal-demo")
 Signal.instance.autoConnect()
 ```
 
@@ -43,7 +44,7 @@ enum DataType: UInt32 {
 }
 ```
 
-Send some text, and specify its type using a `UInt32` enum. This way you can inform the recipient about which type of data is being sent.
+Send some text, and specify its type using our enum. Signal automatically converts objects to data using `NSKeyedArchiver`, so if you want to send your own data, use the `sendData` method instead.
 
 ```swift
 Signal.instance.sendObject(object: "Hello World!", type: DataType.string.rawValue)
@@ -55,7 +56,8 @@ The protocol conformation. We get the data, check its type, convert it back to t
 func signal(didReceiveData data: Data, ofType type: UInt32) {
     if type == DataType.string.rawValue {
         let string = data.convert() as! String
-        self.textLabel.text = string
+    } else if type == DataType.image.rawValue {
+        let image = UIImage(data: data)
     }
 }
 
@@ -122,10 +124,14 @@ You conform to the `SignalDelegate` protocol. There are 3 methods that provide y
 
 ## Coming Soon
 
-This project is currently at minimum functionality. It currently can just connect all users with the same service name, and send data between them. Soon, the following features will be added.
+There are some more features that I'd like to add soon.
 
 - [x] Quick auto connect
 - [x] Simple data communication
 - [x] iOS UI elements
 - [ ] macOS UI elements
 - [ ] Simple streaming
+
+
+## Contribute
+Feel free to to contribute to the project with a pull request to add any new features or bug fixes.
