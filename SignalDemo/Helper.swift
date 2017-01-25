@@ -12,15 +12,3 @@ enum DataType: UInt32 {
     case string = 100
     case image = 101
 }
-
-class DataContainer {
-    
-    var type: Int!
-    var object: Any!
-    
-    init(type: Int, object: Any) {
-        self.type = type
-        self.object = object
-    }
-    
-}

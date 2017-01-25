@@ -1,7 +1,7 @@
  ![Upload](Images/Banner.gif)
-# Apple Signal ![License MIT](https://img.shields.io/badge/platform-iOS+macOS-677cf4.svg)
+# Apple Signal ![Platform](https://img.shields.io/badge/platform-iOS+macOS-677cf4.svg)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
-![License MIT](https://img.shields.io/badge/build-passing-brightgreen.svg)
+![Build Passing](https://img.shields.io/badge/build-passing-brightgreen.svg)
 
 A library that allows for local connections between Apple devices. It will automatically use either bluetooth or wifi to connect multiple devices and share information. Currently supports iOS and macOS.
 
@@ -21,57 +21,64 @@ A library that allows for local connections between Apple devices. It will autom
 
 ## Installation
 
-Grab the Family-iOS or Family-Mac folder from the Source folder, and drag it into your project!
+Grab the source folder and drag it into your project! If you are making a macOS app, you can remove the InviteTableViewController.swift and Signal.storyboard files.
 
 
 ## Example
 
-Family is really easy to setup. Just create it, start the connection, and you can start sending and receiving data! **This is a very basic overview. Check out the Complete Guide and Xcode demo project for the full capabilities.**
+Signal is really easy to setup. Just start the connection, and you can begin sending and receiving data! **This is a very basic overview. Check out the Complete Guide and Xcode demo project for the full capabilities.**
 
-The initialization, perhaps in the `viewDidLoad()` method.
+Start the connection. There are multiple connection modes you can choose from.
 
 ```swift
-// Create the family instance
-let family = Family(serviceType: "family-demo")
-
-// Start connecting all devices
-family.autoConnect()
+Signal.instance.autoConnect()
 ```
 
-Send some text from a text field. Maybe on a button press.
+In Signal, you can add a tag to the data you send so that the receiver knows what the data is. You can create a `UInt32` enum to manage these tags. Here's an example:
 
 ```swift
-family.sendData(object: textField.text!)
+enum DataType: UInt32 {
+    case string = 100
+    case image = 101
+}
 ```
 
-The protocol conformation. We get the data, convert it back to a string using a handy data extension method, and update our UI on the main thread. (You must conform to the other methods as well, but in this case we are just not using them)
+Send some text, and specify its type using a `UInt32` enum. This way you can inform the recipient about which type of data is being sent.
 
 ```swift
-func receivedData(data: Data) {
-    OperationQueue.main.addOperation {
-        let string = data.convert() as? String
+Signal.instance.sendObject(object: "Hello World!", type: DataType.string.rawValue)
+```
+
+The protocol conformation. We get the data, check its type, convert it back to the according object (in this case, a string) using a handy data extension method, and update our UI. You can also update the list of connected devices with the second method.
+
+```swift
+func signal(didReceiveData data: Data, ofType type: UInt32) {
+    if type == DataType.string.rawValue {
+        let string = data.convert() as! String
         self.textLabel.text = string
     }
 }
+
+func signal(connectedDevicesChanged devices: [String]) {}
 ```
 
 And we just setup a session where people can connect and send texts to each other. It's that simple!
 
 ## Complete Guide
 
-Family uses the Multipeer Connectivity library by Apple, and simplifies the process. The process of making a session is overcomplicated, and their library of UI elements used to host/invite other devices is often slow or does not work at all. So, this library helps fix that with a much simpler session process along with custom UI elements.
+Signal uses the Multipeer Connectivity library by Apple, and simplifies the process. The process of making a session is overcomplicated, and their library of UI elements used to host/invite other devices is often slow or does not work at all. So, this library helps fix that with a much simpler session process along with custom UI elements.
 
-### Methods and Propties
+### Methods and Properties
 
   This library has support on both iOS and macOS, but the UI elements have not yet been implemented on the macOS version. Thus, **the `inviteUI()` and `acceptUI` are currently only available on the iOS version.**
 
 **Setup**
 
-`init(serviceType: String)` - Specify a name for the signal.
+`initialize(serviceType: String)` - Specify a name for the signal.
 **Limited to one hyphen (-) and 15 characters.**
-**Devices can only see each other if they have the same service name.** This means that you can use a static string to allow all devices see each other, or you can also add in password functionality by making the user input a custom service name. If you ever want to change this, just reinitialize the family object.
+**Devices can only see each other if they have the same service name.** This means that you can use a static string to allow all devices see each other, or you can also add in password functionality by making the user input a custom service name. If you ever want to change this, just run this method again.
 
-`init(serviceType: String, deviceName: String)` - Specify a service type, but also use a custom name. This usually defaults to whatever the name of the device is.
+`initialize(serviceType: String, deviceName: String)` - Specify a service type, but also use a custom name. If you don't use this method, the default device name will be used.
 
 **Connect**
 
@@ -79,7 +86,7 @@ Family uses the Multipeer Connectivity library by Apple, and simplifies the proc
 
 `inviteAuto()` - Automatically invites all detected devices, and continues to look for more until stopped
 
-`inviteUI() -> UIViewController, iOS Only` - This method returns a custom View Controller that you should present so that the user can see a list of available devices, and invite them by tapping on them. This view can be fully customized by editing the Family.storyboard source file or the `InviteTableViewController` class in the source.
+`inviteUI() -> UIViewController, iOS Only` - This method returns a custom View Controller that you should present so that the user can see a list of available devices, and invite them by tapping on them. This view can be fully customized by editing the Signal.storyboard source file or the `InviteTableViewController` class in the source.
 
 `acceptAuto()` - Automatically accepts any invites received until stopped
 
@@ -93,11 +100,13 @@ Family uses the Multipeer Connectivity library by Apple, and simplifies the proc
 
 `disconnect()` - Disconnects the user from the connected session
 
-`shutDown()` - Shuts down all family services. Stops searching and disconnects.
+`shutDown()` - Shuts down all signal services. Stops searching and disconnects.
 
 **Data**
 
-`sendData(object: Any)` - Pass in any object to be sent to all other connected devices. It works by converting it to NSData and then sending it. If you want to send multiple objects, the best way would be to use a single container class.
+`sendData(object: Any)` - Pass in any object to be sent to all other connected devices. It works by converting it to Data with the NSKeyedArchiver and then sending it. If you want to send multiple objects, the best way would be to use a single container class.
+
+`sendData(data: Data, type: UInt32)` - Send data to all connected devices with a tag so that the receiver knows what type of data it is. An enum should be used to declare different types.
 
 `convert(), Data class extension` - This is a method that can be used to convert data that you have received from another device back into a useful object. It will return type `Any`, but you can cast it into the right class.
 
@@ -105,11 +114,9 @@ Family uses the Multipeer Connectivity library by Apple, and simplifies the proc
 
 
 ### Protocol
-You must assign a class to the `FamilyDelegate` and conform to its protocol. There are 3 methods that provide you with useful information. These methods run in the background, so **make sure that you use the main thread for any UI changes.**
+You conform to the `SignalDelegate` protocol. There are 3 methods that provide you with useful information. These methods run in the background, so **make sure that you use the main thread for any UI changes.**
 
-`receivedData(data: Data)` - This runs whenever data has been broadcasted to all devices. You can use the Data extension method `convert()` in order to cast it back into a specific class.
-
-`receivedInvitation(device: String, alert: UIAlertController?)` - Runs whenever the device has received an invitation. `device` is the sender's name, and the alert will only exist if you used `inviteUI()`
+`ignal(didReceiveData data: Data, ofType type: UInt32)` - This runs whenever data has received. You can use the type to check and convert the data back into its corresponding object.
 
 `deviceConnectionsChanged(connectedDevices: [String])` - Runs whenever a device has connected/disconnected. It gives you the new list of connected device names.
 

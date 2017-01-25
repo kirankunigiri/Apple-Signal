@@ -86,8 +86,10 @@ extension ViewController: UITextFieldDelegate {
 extension ViewController: SignalDelegate {
     
     func signal(didReceiveData data: Data, ofType type: UInt32) {
-        let string = data.convert() as! String
-        self.textLabel.text = string
+        if type == DataType.string.rawValue {
+            let string = data.convert() as! String
+            self.textLabel.text = string
+        }
     }
     
     func signal(connectedDevicesChanged devices: [String]) {
